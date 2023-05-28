@@ -82,9 +82,12 @@ public class RAMJobStore implements JobStore {
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      * 
      * Data members.
-     * 
+     *   HasMap对象:  通过空间换取查询时间的策略,把JobDetail和Trigger的信息放进这些HashMap对象中,方便程序可以根据key或者group来匹配相关的JobDetail和Trigger
+     *   TreeSet   timeTiggers: 利用TreeSet排序和有序的特性
+     *       this.timeTiggers.first方法总能返回最先处理的Trigger
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
+
 
     protected HashMap<JobKey, JobWrapper> jobsByKey = new HashMap<JobKey, JobWrapper>(1000);
 
@@ -248,6 +251,7 @@ public class RAMJobStore implements JobStore {
      */
     public void storeJobAndTrigger(JobDetail newJob,
             OperableTrigger newTrigger) throws JobPersistenceException {
+
         storeJob(newJob, false);
         storeTrigger(newTrigger, false);
     }
@@ -269,6 +273,10 @@ public class RAMJobStore implements JobStore {
      */
     public void storeJob(JobDetail newJob,
             boolean replaceExisting) throws ObjectAlreadyExistsException {
+
+        // 内部类JobWrapper是一个包jobKey和jobDetail的表
+        // 克隆一个新的jobDetail来创建一个JobWrapper，然后维护到jobsByKey和jobsByGroup属性中
+        // 维护HashMap系列对象的时候,通过lock的synchronized代码块来做线程同步
         JobWrapper jw = new JobWrapper((JobDetail)newJob.clone());
 
         boolean repl = false;
@@ -438,12 +446,14 @@ public class RAMJobStore implements JobStore {
                 grpMap = new HashMap<TriggerKey, TriggerWrapper>(100);
                 triggersByGroup.put(newTrigger.getKey().getGroup(), grpMap);
             }
+
             grpMap.put(newTrigger.getKey(), tw);
             // add to triggers by FQN map
             triggersByKey.put(tw.key, tw);
 
             if (pausedTriggerGroups.contains(newTrigger.getKey().getGroup())
                     || pausedJobGroups.contains(newTrigger.getJobKey().getGroup())) {
+
                 tw.state = TriggerWrapper.STATE_PAUSED;
                 if (blockedJobs.contains(tw.jobKey)) {
                     tw.state = TriggerWrapper.STATE_PAUSED_BLOCKED;

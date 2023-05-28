@@ -61,6 +61,7 @@ public class StdJobRunShellFactory implements JobRunShellFactory {
         this.scheduler = sched;
     }
 
+
     /**
      * <p>
      * Called by the <code>{@link org.quartz.core.QuartzSchedulerThread}</code>

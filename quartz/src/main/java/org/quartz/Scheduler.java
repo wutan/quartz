@@ -123,6 +123,7 @@ public interface Scheduler {
      */
     String DEFAULT_GROUP = Key.DEFAULT_GROUP;
 
+
     /**
      * A constant <code>Trigger</code> group name used internally by the
      * scheduler - clients should not use the value of this constant
@@ -131,6 +132,7 @@ public interface Scheduler {
      * @see org.quartz.JobDetail#requestsRecovery()
      */
     String DEFAULT_RECOVERY_GROUP = "RECOVERING_JOBS";
+
 
     /**
      * A constant <code>Trigger</code> group name used internally by the

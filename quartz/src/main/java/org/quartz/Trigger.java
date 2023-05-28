@@ -103,7 +103,8 @@ public interface Trigger extends Serializable, Cloneable, Comparable<Trigger> {
      * </p>
      */
     public static final int MISFIRE_INSTRUCTION_SMART_POLICY = 0;
-    
+
+
     /**
      * Instructs the <code>{@link Scheduler}</code> that the 
      * <code>Trigger</code> will never be evaluated for a misfire situation, 

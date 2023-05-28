@@ -97,6 +97,7 @@ public interface DriverDelegate {
         String newState, String oldState1, String oldState2)
         throws SQLException;
 
+
     /**
      * <p>
      * Get the names of all of the triggers that have misfired - according to

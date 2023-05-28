@@ -63,7 +63,8 @@ public class JobBuilder {
     private Class<? extends Job> jobClass;
     private boolean durability;
     private boolean shouldRecover;
-    
+
+
     private JobDataMap jobDataMap = new JobDataMap();
     
     protected JobBuilder() {

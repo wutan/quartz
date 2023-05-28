@@ -37,6 +37,7 @@ public interface Constants {
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
+
     // Table names
     String TABLE_JOB_DETAILS = "JOB_DETAILS";
 

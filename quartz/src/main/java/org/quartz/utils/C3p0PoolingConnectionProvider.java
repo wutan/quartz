@@ -165,6 +165,7 @@ public class C3p0PoolingConnectionProvider implements PoolingConnectionProvider 
             boolean validateOnCheckout,
             int idleValidationSeconds,
             int maxIdleSeconds) throws SQLException, SchedulerException {
+
         if (dbURL == null) {
             throw new SQLException(
                     "DBPool could not be created: DB URL cannot be null");

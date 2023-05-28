@@ -24,6 +24,8 @@ public class SystemPropertyInstanceIdGenerator implements InstanceIdGenerator {
 
   private String prepend = null;
   private String postpend = null;
+
+  //  org.quartz.scheduler.instanceId
   private String systemPropertyName = SYSTEM_PROPERTY;
   
   /**
@@ -33,13 +35,17 @@ public class SystemPropertyInstanceIdGenerator implements InstanceIdGenerator {
    * @throws SchedulerException Shouldn't a value be found
    */
   public String generateInstanceId() throws SchedulerException {
+    //  获取 org.quartz.scheduler.instanceId  属性字段
     String property = System.getProperty(getSystemPropertyName());
+
     if(property == null) {
       throw new SchedulerException("No value for '" + SYSTEM_PROPERTY
                                    + "' system property found, please configure your environment accordingly!");
     }
+
     if(getPrepend() != null)
         property = getPrepend() + property;
+
     if(getPostpend() != null)
         property = property + getPostpend();
     

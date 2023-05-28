@@ -62,6 +62,7 @@ public class StdScheduler implements Scheduler {
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
+    // 委托给了QuartzScheduler
     private QuartzScheduler sched;
 
     /*
@@ -108,7 +109,11 @@ public class StdScheduler implements Scheduler {
         return sched.getSchedulerInstanceId();
     }
 
+
+    // 只有这个方法没有委托给QuartzScheduler
+    // 除了getClass(), 其他方法在QuartzScheduler都可以拿到
     public SchedulerMetaData getMetaData() {
+
         return new SchedulerMetaData(getSchedulerName(),
                 getSchedulerInstanceId(), getClass(), false, isStarted(), 
                 isInStandbyMode(), isShutdown(), sched.runningSince(), 

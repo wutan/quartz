@@ -37,4 +37,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface DisallowConcurrentExecution {
 
+    // 在某一个JobDetail实例到点运行之后，在其运行结束之前, 不会再发起一次该JobDetail实例的调用，即使设置的该JobDetail实例的定时执行时间到了
+    // JobDetail实例之间互不影响，注解之作用于同一个JobDetail,不同的JobDetail实例不受影响
 }

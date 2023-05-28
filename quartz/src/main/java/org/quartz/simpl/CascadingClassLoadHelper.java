@@ -79,9 +79,13 @@ public class CascadingClassLoadHelper implements ClassLoadHelper {
     public void initialize() {
         loadHelpers = new LinkedList<ClassLoadHelper>();
 
+        //  当前类的类加载器  this.getClass().getClassLoader();
         loadHelpers.add(new LoadingLoaderClassLoadHelper());
+        // Class.forName
         loadHelpers.add(new SimpleClassLoadHelper());
+        // 当前线程的contextClassLoader
         loadHelpers.add(new ThreadContextClassLoadHelper());
+        // 当前线程的classLoader
         loadHelpers.add(new InitThreadContextClassLoadHelper());
         
         for(ClassLoadHelper loadHelper: loadHelpers) {
@@ -150,6 +154,7 @@ public class CascadingClassLoadHelper implements ClassLoadHelper {
 
         if (bestCandidate != null) {
             result = bestCandidate.getResource(name);
+
             if(result == null) {
               bestCandidate = null;
             }

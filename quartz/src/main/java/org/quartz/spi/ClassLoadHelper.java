@@ -45,6 +45,7 @@ public interface ClassLoadHelper {
      */
     Class<?> loadClass(String name) throws ClassNotFoundException;
 
+
     /**
      * Return the class of the given type with the given name.
      *

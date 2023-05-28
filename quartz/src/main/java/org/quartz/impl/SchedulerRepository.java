@@ -41,9 +41,10 @@ public class SchedulerRepository {
      * 
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-
+    // 保存scheduler实例
     private HashMap<String, Scheduler> schedulers;
 
+    // 单例模式
     private static SchedulerRepository inst;
 
     /*

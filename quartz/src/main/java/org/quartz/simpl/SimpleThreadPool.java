@@ -55,32 +55,45 @@ public class SimpleThreadPool implements ThreadPool {
      * 
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-
+    // 初始化线程数, 对应配置文件的threadCount
     private int count = -1;
 
+    // 线程优先级, 对应配置文件的threadPriority
     private int prio = Thread.NORM_PRIORITY;
 
+    // 线程池是否停止
     private boolean isShutdown = false;
+
+    // 切换挂起
     private boolean handoffPending = false;
 
+    // 继承加载器, 对应配置文件的threadInheritContextClassLoaderOfInitializingThread
     private boolean inheritLoader = false;
 
+    // 继承分组
     private boolean inheritGroup = true;
 
+    // 是否守护线程
     private boolean makeThreadsDaemons = false;
 
+    // 线程组, 由于安全性和功能羸弱，effective java已不推荐使用
     private ThreadGroup threadGroup;
 
+    // 锁
     private final Object nextRunnableLock = new Object();
 
+    //  工作线程   WokerThread是一个内部类
     private List<WorkerThread> workers;
+    // 可用线程
     private LinkedList<WorkerThread> availWorkers = new LinkedList<WorkerThread>();
+    // 忙碌线程
     private LinkedList<WorkerThread> busyWorkers = new LinkedList<WorkerThread>();
 
     private String threadNamePrefix;
 
     private final Logger log = LoggerFactory.getLogger(getClass());
-    
+
+    // 调度器实例名称, 对应配置文件scheduler.instanceName
     private String schedulerInstanceName;
 
     /*
@@ -247,16 +260,19 @@ public class SimpleThreadPool implements ThreadPool {
                     "Thread priority must be > 0 and <= 9");
         }
 
+        // 当前线程的线程组
         if(isThreadsInheritGroupOfInitializingThread()) {
             threadGroup = Thread.currentThread().getThreadGroup();
         } else {
             // follow the threadGroup tree to the root thread group.
             threadGroup = Thread.currentThread().getThreadGroup();
             ThreadGroup parent = threadGroup;
+
             while ( !parent.getName().equals("main") ) {
                 threadGroup = parent;
                 parent = threadGroup.getParent();
             }
+
             threadGroup = new ThreadGroup(parent, schedulerInstanceName + "-SimpleThreadPool");
             if (isMakeThreadsDaemons()) {
                 threadGroup.setDaemon(true);
@@ -286,6 +302,7 @@ public class SimpleThreadPool implements ThreadPool {
             if (threadPrefix == null) {
                 threadPrefix = schedulerInstanceName + "_Worker";
             }
+
             WorkerThread wt = new WorkerThread(this, threadGroup,
                 threadPrefix + "-" + i,
                 getThreadPriority(),
@@ -413,12 +430,12 @@ public class SimpleThreadPool implements ThreadPool {
         }
 
         synchronized (nextRunnableLock) {
-
             handoffPending = true;
 
             // Wait until a worker thread is available
             while ((availWorkers.size() < 1) && !isShutdown) {
                 try {
+                    // 等待0.5秒
                     nextRunnableLock.wait(500);
                 } catch (InterruptedException ignore) {
                 }
@@ -427,16 +444,21 @@ public class SimpleThreadPool implements ThreadPool {
             if (!isShutdown) {
                 WorkerThread wt = (WorkerThread)availWorkers.removeFirst();
                 busyWorkers.add(wt);
+
                 wt.run(runnable);
+
             } else {
                 // If the thread pool is going down, execute the Runnable
                 // within a new additional worker thread (no thread from the pool).
                 WorkerThread wt = new WorkerThread(this, threadGroup,
                         "WorkerThread-LastJob", prio, isMakeThreadsDaemons(), runnable);
+
                 busyWorkers.add(wt);
                 workers.add(wt);
                 wt.start();
             }
+
+            // 通知notifyAll, 释放锁
             nextRunnableLock.notifyAll();
             handoffPending = false;
         }
@@ -528,6 +550,7 @@ public class SimpleThreadPool implements ThreadPool {
             this.runnable = runnable;
             if(runnable != null)
                 runOnce = true;
+
             setPriority(prio);
             setDaemon(isDaemon);
         }
@@ -548,6 +571,7 @@ public class SimpleThreadPool implements ThreadPool {
                 }
 
                 runnable = newRunnable;
+                //  当runnable被赋值时，工作线程被唤醒
                 lock.notifyAll();
             }
         }
@@ -563,13 +587,14 @@ public class SimpleThreadPool implements ThreadPool {
             
             while (run.get()) {
                 try {
-                    synchronized(lock) {
+                    synchronized(lock) { //  上锁，因为用到了wait和notify
                         while (runnable == null && run.get()) {
                             lock.wait(500);
                         }
 
                         if (runnable != null) {
                             ran = true;
+                            // 执行工作
                             runnable.run();
                         }
                     }
@@ -591,16 +616,22 @@ public class SimpleThreadPool implements ThreadPool {
                     synchronized(lock) {
                         runnable = null;
                     }
+
                     // repair the thread in case the runnable mucked it up...
                     if(getPriority() != tp.getThreadPriority()) {
                         setPriority(tp.getThreadPriority());
                     }
 
+                    // 是否单次线程
                     if (runOnce) {
                            run.set(false);
+
+                           // 加入availableList, 从busyList中清理出去
                         clearFromBusyWorkersList(this);
                     } else if(ran) {
                         ran = false;
+
+                        // 从busyList中清理出去
                         makeAvailable(this);
                     }
 

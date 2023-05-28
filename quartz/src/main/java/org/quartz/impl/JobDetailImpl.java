@@ -63,6 +63,8 @@ import org.quartz.utils.ClassUtils;
  */
 @SuppressWarnings("deprecation")
 public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail {
+    // JobDetailImpl是接口JobDetail的唯一实现类,本质上来说是一个Java Bean
+    // JobDeatil包含jobDataMap和jobClass，以及一些描述，名称等等，采用Build模式建造，jobDataMap主要存储一些额外信息。
 
     private static final long serialVersionUID = -6069784757781506897L;
     
@@ -73,21 +75,30 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
      * 
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-
+    // Job的名称
     private String name;
 
+    // Job的分组    DEFAULT
     private String group = Scheduler.DEFAULT_GROUP;
 
+    // Job的描述
     private String description;
 
+    // 执行Job业务逻辑的对应实体类的class引用
     private Class<? extends Job> jobClass;
 
+    // 保存关于Job的信息，根据业务逻辑自己放进去
+    // 管理或者执行Job的过程中保存或者查询一些自定义的信息
     private JobDataMap jobDataMap;
 
+    // 当没有绑定Trigger的情况, 是否保存Job
     private boolean durability = false;
 
+    // Job是否可以从恢复情况下再次执行
     private boolean shouldRecover = false;
 
+    // 封装了name和group,作为JobDetail的唯一标识
+    // 用空间换区时间和可读性的策略
     private transient JobKey key = null;
 
     /*
@@ -387,7 +398,8 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
      * @return whether the associated Job class carries the {@link DisallowConcurrentExecution} annotation.
      */
     public boolean isConcurrentExectionDisallowed() {
-        
+        // DisallowConcurrentExecution注解
+        // 告诉Quartz不要并发地执行同一个JobDetail实例
         return ClassUtils.isAnnotationPresent(jobClass, DisallowConcurrentExecution.class);
     }
 
@@ -452,6 +464,7 @@ public class JobDetailImpl implements Cloneable, java.io.Serializable, JobDetail
     }
 
     public JobBuilder getJobBuilder() {
+
         JobBuilder b = JobBuilder.newJob()
             .ofType(getJobClass())
             .requestRecovery(requestsRecovery())

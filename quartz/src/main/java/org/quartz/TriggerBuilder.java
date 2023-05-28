@@ -71,7 +71,9 @@ public class TriggerBuilder<T extends Trigger> {
     private String calendarName;
     private JobKey jobKey;
     private JobDataMap jobDataMap = new JobDataMap();
-    
+
+    // 创建Trigger实例的动作委托给了SchedulerBuilder类
+    // 生成MutableTrigger
     private ScheduleBuilder<?> scheduleBuilder = null;
     
     private TriggerBuilder() {
@@ -98,14 +100,16 @@ public class TriggerBuilder<T extends Trigger> {
 
         if(scheduleBuilder == null)
             scheduleBuilder = SimpleScheduleBuilder.simpleSchedule();
+
         MutableTrigger trig = scheduleBuilder.build();
-        
         trig.setCalendarName(calendarName);
         trig.setDescription(description);
         trig.setStartTime(startTime);
         trig.setEndTime(endTime);
+
         if(key == null)
             key = new TriggerKey(Key.createUniqueName(null), null);
+
         trig.setKey(key); 
         if(jobKey != null)
             trig.setJobKey(jobKey);

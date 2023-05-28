@@ -40,6 +40,7 @@ public interface StdJDBCConstants extends Constants {
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
+
     // table prefix substitution string
     String TABLE_PREFIX_SUBST = "{0}";
 

@@ -223,17 +223,18 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
      * @return number of rows updated
      */
     public int updateTriggerStatesFromOtherStates(Connection conn,
-            String newState, String oldState1, String oldState2)
-        throws SQLException {
+            String newState, String oldState1, String oldState2) throws SQLException {
+
         PreparedStatement ps = null;
 
         try {
-            ps = conn
-                    .prepareStatement(rtp(UPDATE_TRIGGER_STATES_FROM_OTHER_STATES));
+            ps = conn.prepareStatement(rtp(UPDATE_TRIGGER_STATES_FROM_OTHER_STATES));
             ps.setString(1, newState);
             ps.setString(2, oldState1);
             ps.setString(3, oldState2);
+
             return ps.executeUpdate();
+
         } finally {
             closeStatement(ps);
         }
@@ -603,6 +604,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
      */
     public int insertJobDetail(Connection conn, JobDetail job)
         throws IOException, SQLException {
+
         ByteArrayOutputStream baos = serializeJobData(job.getJobDataMap());
 
         PreparedStatement ps = null;
@@ -829,9 +831,9 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
      * @throws IOException
      *           if deserialization causes an error
      */
-    public JobDetail selectJobDetail(Connection conn, JobKey jobKey,
-            ClassLoadHelper loadHelper)
-        throws ClassNotFoundException, IOException, SQLException {
+    public JobDetail selectJobDetail(Connection conn, JobKey jobKey, ClassLoadHelper loadHelper)
+            throws ClassNotFoundException, IOException, SQLException {
+
         PreparedStatement ps = null;
         ResultSet rs = null;
 
@@ -1350,8 +1352,8 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
      */
     public int updateTriggerStateFromOtherStates(Connection conn,
             TriggerKey triggerKey, String newState, String oldState1,
-            String oldState2, String oldState3)
-        throws SQLException {
+            String oldState2, String oldState3) throws SQLException {
+
         PreparedStatement ps = null;
 
         try {
@@ -1505,13 +1507,12 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     }
 
     public int updateTriggerStatesForJobFromOtherState(Connection conn,
-            JobKey jobKey, String state, String oldState)
-        throws SQLException {
+            JobKey jobKey, String state, String oldState) throws SQLException {
+
         PreparedStatement ps = null;
 
         try {
-            ps = conn
-                    .prepareStatement(rtp(UPDATE_JOB_TRIGGER_STATES_FROM_OTHER_STATE));
+            ps = conn.prepareStatement(rtp(UPDATE_JOB_TRIGGER_STATES_FROM_OTHER_STATE));
             ps.setString(1, state);
             ps.setString(2, jobKey.getName());
             ps.setString(3, jobKey.getGroup());
@@ -2341,6 +2342,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
      */
     public Calendar selectCalendar(Connection conn, String calendarName)
         throws ClassNotFoundException, IOException, SQLException {
+
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
@@ -2571,6 +2573,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
     @Deprecated
     public List<TriggerKey> selectTriggerToAcquire(Connection conn, long noLaterThan, long noEarlierThan)
             throws SQLException {
+
         // This old API used to always return 1 trigger.
         return selectTriggerToAcquire(conn, noLaterThan, noEarlierThan, 1);
     }
@@ -2594,22 +2597,28 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
      */
     public List<TriggerKey> selectTriggerToAcquire(Connection conn, long noLaterThan, long noEarlierThan, int maxCount)
         throws SQLException {
+
         PreparedStatement ps = null;
         ResultSet rs = null;
+
         List<TriggerKey> nextTriggers = new LinkedList<TriggerKey>();
         try {
+            // 查询 TRIGGERS表中    NEXT_FIRE_TIME
             ps = conn.prepareStatement(rtp(SELECT_NEXT_TRIGGER_TO_ACQUIRE));
             
             // Set max rows to retrieve
             if (maxCount < 1)
                 maxCount = 1; // we want at least one trigger back.
+
             ps.setMaxRows(maxCount);
             
             // Try to give jdbc driver a hint to hopefully not pull over more than the few rows we actually need.
             // Note: in some jdbc drivers, such as MySQL, you must set maxRows before fetchSize, or you get exception!
             ps.setFetchSize(maxCount);
-            
+
+            //  WAITING
             ps.setString(1, STATE_WAITING);
+            // 下次执行时间
             ps.setBigDecimal(2, new BigDecimal(String.valueOf(noLaterThan)));
             ps.setBigDecimal(3, new BigDecimal(String.valueOf(noEarlierThan)));
             rs = ps.executeQuery();
@@ -2642,6 +2651,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
      */
     public int insertFiredTrigger(Connection conn, OperableTrigger trigger,
             String state, JobDetail job) throws SQLException {
+
         PreparedStatement ps = null;
         try {
             ps = conn.prepareStatement(rtp(INSERT_FIRED_TRIGGER));
@@ -2649,14 +2659,19 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             ps.setString(2, trigger.getKey().getName());
             ps.setString(3, trigger.getKey().getGroup());
             ps.setString(4, instanceId);
+            // 触发时间
             ps.setBigDecimal(5, new BigDecimal(String.valueOf(System.currentTimeMillis())));
+            // 调度时间
             ps.setBigDecimal(6, new BigDecimal(String.valueOf(trigger.getNextFireTime().getTime())));
             ps.setString(7, state);
+
             if (job != null) {
                 ps.setString(8, trigger.getJobKey().getName());
                 ps.setString(9, trigger.getJobKey().getGroup());
+
                 setBoolean(ps, 10, job.isConcurrentExectionDisallowed());
                 setBoolean(ps, 11, job.requestsRecovery());
+
             } else {
                 ps.setString(8, null);
                 ps.setString(9, null);
@@ -2686,8 +2701,10 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
      */
     public int updateFiredTrigger(Connection conn, OperableTrigger trigger,
             String state, JobDetail job) throws SQLException {
+
         PreparedStatement ps = null;
         try {
+            //  TABLE_FIRED_TRIGGERS
             ps = conn.prepareStatement(rtp(UPDATE_FIRED_TRIGGER));
             
             ps.setString(1, instanceId);
@@ -2699,6 +2716,7 @@ public class StdJDBCDelegate implements DriverDelegate, StdJDBCConstants {
             if (job != null) {
                 ps.setString(5, trigger.getJobKey().getName());
                 ps.setString(6, trigger.getJobKey().getGroup());
+
                 setBoolean(ps, 7, job.isConcurrentExectionDisallowed());
                 setBoolean(ps, 8, job.requestsRecovery());
             } else {

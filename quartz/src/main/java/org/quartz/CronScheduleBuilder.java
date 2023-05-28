@@ -62,6 +62,7 @@ import org.quartz.spi.MutableTrigger;
 public class CronScheduleBuilder extends ScheduleBuilder<CronTrigger> {
 
     private CronExpression cronExpression;
+    // 0
     private int misfireInstruction = CronTrigger.MISFIRE_INSTRUCTION_SMART_POLICY;
 
     protected CronScheduleBuilder(CronExpression cronExpression) {
@@ -70,6 +71,7 @@ public class CronScheduleBuilder extends ScheduleBuilder<CronTrigger> {
         }
         this.cronExpression = cronExpression;
     }
+
 
     /**
      * Build the actual Trigger -- NOT intended to be invoked by end users, but
@@ -83,8 +85,10 @@ public class CronScheduleBuilder extends ScheduleBuilder<CronTrigger> {
 
         CronTriggerImpl ct = new CronTriggerImpl();
 
+        // 设置cron表达式
         ct.setCronExpression(cronExpression);
         ct.setTimeZone(cronExpression.getTimeZone());
+        //  0
         ct.setMisfireInstruction(misfireInstruction);
 
         return ct;

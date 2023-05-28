@@ -33,6 +33,7 @@ import org.quartz.SchedulerException;
  * @see org.quartz.simpl.SimpleInstanceIdGenerator
  */
 public interface InstanceIdGenerator {
+
     /**
      * Generate the instance id for a <code>Scheduler</code>
      * 

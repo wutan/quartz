@@ -40,5 +40,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface PersistJobDataAfterExecution {
-
+    // 告诉quartz在成功执行了Job实现类的execute方法后(没发生任何异常), 更新jobDetail中JobDataMap的数据。
+    // 使得JobDetail实例在下一次执行的时候,JobDataMap中是更新后的数据，而不是更新前数据
 }

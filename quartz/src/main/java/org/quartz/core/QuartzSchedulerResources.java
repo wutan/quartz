@@ -368,6 +368,7 @@ public class QuartzSchedulerResources {
         this.jobStore = jobStore;
     }
 
+
     /**
      * <p>
      * Get the <code>{@link JobRunShellFactory}</code> for the <code>{@link QuartzScheduler}</code>

@@ -40,6 +40,7 @@ import org.quartz.SchedulerException;
  */
 public interface JobFactory {
 
+
     /**
      * Called by the scheduler at the time of the trigger firing, in order to
      * produce a <code>Job</code> instance on which to call execute.

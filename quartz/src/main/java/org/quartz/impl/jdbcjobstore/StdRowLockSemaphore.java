@@ -120,11 +120,13 @@ public class StdRowLockSemaphore extends DBSemaphore {
                         "Lock '" + lockName + "' is being obtained: " + 
                         Thread.currentThread().getName());
                 }
+
                 rs = ps.executeQuery();
                 if (!rs.next()) {
                     getLog().debug(
                             "Inserting new lock row for lock: '" + lockName + "' being obtained by thread: " + 
                             Thread.currentThread().getName());
+
                     rs.close();
                     rs = null;
                     ps.close();

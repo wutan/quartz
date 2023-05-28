@@ -32,12 +32,14 @@ public class Key<T>  implements Serializable, Comparable<Key<T>> {
   
     private static final long serialVersionUID = -7141167957642391350L;
 
+
     /**
      * The default group for scheduling entities, with the value "DEFAULT".
      */
     public static final String DEFAULT_GROUP = "DEFAULT";
 
     private final String name;
+
     private final String group;
     
     

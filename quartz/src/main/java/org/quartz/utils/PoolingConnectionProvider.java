@@ -58,6 +58,7 @@ public interface PoolingConnectionProvider extends ConnectionProvider {
     /** The maximum number of database connections to have in the pool.  Default is 10. */
     String DB_MAX_CONNECTIONS = "maxConnections";
 
+
     /**
      * The database sql query to execute every time a connection is returned
      * to the pool to ensure that it is still valid.

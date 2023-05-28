@@ -53,6 +53,7 @@ public class SimpleClassLoadHelper implements ClassLoadHelper {
     public void initialize() {
     }
 
+
     /**
      * Return the class with the given name.
      */

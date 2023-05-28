@@ -46,6 +46,7 @@ public interface SchedulerListener {
      */
     void jobScheduled(Trigger trigger);
 
+
     /**
      * <p>
      * Called by the <code>{@link Scheduler}</code> when a <code>{@link org.quartz.JobDetail}</code>
@@ -56,6 +57,7 @@ public interface SchedulerListener {
      */
     void jobUnscheduled(TriggerKey triggerKey);
 
+
     /**
      * <p>
      * Called by the <code>{@link Scheduler}</code> when a <code>{@link Trigger}</code>
@@ -64,6 +66,7 @@ public interface SchedulerListener {
      */
     void triggerFinalized(Trigger trigger);
 
+
     /**
      * <p>
      * Called by the <code>{@link Scheduler}</code> when a <code>{@link Trigger}</code>
@@ -71,6 +74,7 @@ public interface SchedulerListener {
      * </p>
      */
     void triggerPaused(TriggerKey triggerKey);
+
 
     /**
      * <p>
@@ -150,6 +154,7 @@ public interface SchedulerListener {
      */
     void jobsResumed(String jobGroup);
 
+
     /**
      * <p>
      * Called by the <code>{@link Scheduler}</code> when a serious error has
@@ -173,6 +178,7 @@ public interface SchedulerListener {
      * </p>
      */
     void schedulerInStandbyMode();
+
 
     /**
      * <p>

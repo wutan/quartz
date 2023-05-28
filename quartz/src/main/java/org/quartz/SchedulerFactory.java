@@ -21,13 +21,20 @@ package org.quartz;
 import java.util.Collection;
 
 /**
- * Provides a mechanism for obtaining client-usable handles to <code>Scheduler</code>
- * instances.
+ * Provides a mechanism for obtaining client-usable handles to <code>Scheduler</code>  instances.
  * 
  * @see Scheduler
  * @see org.quartz.impl.StdSchedulerFactory
  * 
  * @author James House
+ *
+ *   SchedulerFacotory 是一个接口，它有两个实现，
+ *          1.  StdSchedulerFacotory 根据配置文件来创建 Scheduler
+ *          2.  DirectSchedulerFactory 主要通过编码对 Scheduler 控制，通常为了侵入性更小、实现更方便
+ *
+ *          我们用 StdSchedulerFacotory 类型来创建 StdScheduler，
+ *                  quartz.properties 里面的配置都对应到这个 StdSchedulerFactory 中，
+ *                  所以对某个配置不明白已经该配置的默认值可以看 StdSchedulerFactory 中获取配置的代码。
  */
 public interface SchedulerFactory {
 

@@ -51,6 +51,7 @@ public interface JobRunShellFactory {
     void initialize(Scheduler scheduler)
         throws SchedulerConfigException;
 
+
     /**
      * <p>
      * Called by the <code>{@link org.quartz.core.QuartzSchedulerThread}</code>

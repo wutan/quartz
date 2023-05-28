@@ -101,22 +101,28 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
+
     private static String VERSION_MAJOR = "UNKNOWN";
     private static String VERSION_MINOR = "UNKNOWN";
     private static String VERSION_ITERATION = "UNKNOWN";
 
+    // QuartzSchedulerResources对象是通过构造器放进去的
     static {
         Properties props = new Properties();
         InputStream is = null;
         try {
+            //   SchedulerFactory加载的文件是  quartz.properties
             is = QuartzScheduler.class.getResourceAsStream("quartz-build.properties");
+
             if(is != null) {
                 props.load(is);
+
                 String version = props.getProperty("version");
                 if (version != null) {
                     String[] versionComponents = version.split("\\.");
                     VERSION_MAJOR = versionComponents[0];
                     VERSION_MINOR = versionComponents[1];
+
                     if(versionComponents.length > 2)
                         VERSION_ITERATION = versionComponents[2];
                     else
@@ -208,13 +214,20 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
     public QuartzScheduler(QuartzSchedulerResources resources, long idleWaitTime, @Deprecated long dbRetryInterval)
         throws SchedulerException {
         this.resources = resources;
+
         if (resources.getJobStore() instanceof JobListener) {
             addInternalJobListener((JobListener)resources.getJobStore());
         }
 
+        //  QuartzSchedulerThread创建和启动的逻辑
         this.schedThread = new QuartzSchedulerThread(this, resources);
+
+        //  DefaultThreadExecutor是唯一的实现类, 传入指定的Thread对象，便启动该线程
         ThreadExecutor schedThreadExecutor = resources.getThreadExecutor();
+
+        // 启动 QuartzSchedulerThread
         schedThreadExecutor.execute(this.schedThread);
+
         if (idleWaitTime > 0) {
             this.schedThread.setIdleWaitTime(idleWaitTime);
         }
@@ -525,6 +538,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
      */
     public void start() throws SchedulerException {
 
+        // 判断调度器是否关掉或者停止，因为可能开始之前已经将调度器停止或关闭，是则直接抛出异常
         if (shuttingDown|| closed) {
             throw new SchedulerException(
                     "The Scheduler cannot be restarted after shutdown() has been called.");
@@ -532,21 +546,34 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 
         // QTZ-212 : calling new schedulerStarting() method on the listeners
         // right after entering start()
+        // 通知监听器, 马上就要执行
         notifySchedulerListenersStarting();
 
-        if (initialStart == null) {
+        if (initialStart == null) {  // 初始化标识为null, 进行初始化操作
             initialStart = new Date();
-            this.resources.getJobStore().schedulerStarted();            
+
+            // RAMJobStore 啥都不做
+            // JobStoreSupport 判断是否集群,恢复Job
+            this.resources.getJobStore().schedulerStarted();
+
+            // 启动一些通知jobStore和一些插件凯斯执行
             startPlugins();
         } else {
+
+            // 如果initial不为空，说明曾经启动过，则重新恢复jobStore
             resources.getJobStore().schedulerResumed();
         }
 
+        // 唤醒所有等待的线程
+        // 线程的协作通过Object sigLock来实现，关于sigLock.wait()方法都在QuartzSchedulerThread的run方法里面，
+        //     所以sigLock唤醒的是只有线程QuartzSchedulerThread。
+        //     run()方法选取了一部分，未设置开始之前，while里面还有一个while (paused && !halted.get()) 一直等待变量改变，否则，就一直wait这也就是sche.scheduleJob()未真正启动工作的原因
         schedThread.togglePause(false);
 
         getLog().info(
                 "Scheduler " + resources.getUniqueIdentifier() + " started.");
-        
+
+        //  通知任务已经开始执行
         notifySchedulerListenersStarted();
     }
 
@@ -810,8 +837,9 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
      *           if the Job or Trigger cannot be added to the Scheduler, or
      *           there is an internal Scheduler error.
      */
-    public Date scheduleJob(JobDetail jobDetail,
-            Trigger trigger) throws SchedulerException {
+    public Date scheduleJob(JobDetail jobDetail, Trigger trigger) throws SchedulerException {
+
+        // 一些校验，jobDetail，trigger，jobClass判空
         validateState();
 
         if (jobDetail == null) {
@@ -829,11 +857,13 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         if (jobDetail.getJobClass() == null) {
             throw new SchedulerException("Job's class cannot be null");
         }
-        
+
+        // TriggerBuilder.build()会生成一个OperableTrigger实例
         OperableTrigger trig = (OperableTrigger)trigger;
 
         if (trigger.getJobKey() == null) {
             trig.setJobKey(jobDetail.getKey());
+
         } else if (!trigger.getJobKey().equals(jobDetail.getKey())) {
             throw new SchedulerException(
                 "Trigger does not reference given job!");
@@ -841,10 +871,14 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
 
         trig.validate();
 
+        // 计算第一次执行的日期, 计算日期为空, 则抛出异常, job永远不会被调度
         Calendar cal = null;
+
         if (trigger.getCalendarName() != null) {
             cal = resources.getJobStore().retrieveCalendar(trigger.getCalendarName());
         }
+
+        // 解析各种类型的Trigger
         Date ft = trig.computeFirstFireTime(cal);
 
         if (ft == null) {
@@ -852,9 +886,15 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
                     "Based on configured schedule, the given trigger '" + trigger.getKey() + "' will never fire.");
         }
 
+        // 保存job和trigger
+        //  RamJobStore  JdbcStoreTx:在独立的程序中使用,自己管理事务,不参与外部事务  JdbcStoreCMT:如果需要容器管理事务时
         resources.getJobStore().storeJobAndTrigger(jobDetail, trig);
+
+        //  通知监听器程序：工作加入通知
         notifySchedulerListenersJobAdded(jobDetail);
+        //  通知监听器程序：通知正在休眠（工作可能都执行完，主线程sigLock.wait()）的主执行线程，有工作加入，唤醒主线程
         notifySchedulerThread(trigger.getNextFireTime().getTime());
+        //  通知调度器job被调度了
         notifySchedulerListenersSchduled(trigger);
 
         return ft;
@@ -871,8 +911,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
      *           added to the Scheduler, or there is an internal Scheduler
      *           error.
      */
-    public Date scheduleJob(Trigger trigger)
-        throws SchedulerException {
+    public Date scheduleJob(Trigger trigger) throws SchedulerException {
         validateState();
 
         if (trigger == null) {
@@ -936,6 +975,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         }
 
         resources.getJobStore().storeJob(jobDetail, replace);
+
         notifySchedulerThread(0L);
         notifySchedulerListenersJobAdded(jobDetail);
     }
@@ -956,6 +996,7 @@ public class QuartzScheduler implements RemotableQuartzScheduler {
         boolean result = false;
         
         List<? extends Trigger> triggers = getTriggersOfJob(jobKey);
+
         for (Trigger trigger : triggers) {
             if (!unscheduleJob(trigger.getKey())) {
                 StringBuilder sb = new StringBuilder().append(

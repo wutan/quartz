@@ -48,6 +48,7 @@ import java.io.Serializable;
  */
 public interface JobDetail extends Serializable, Cloneable {
 
+
     public JobKey getKey();
 
     /**

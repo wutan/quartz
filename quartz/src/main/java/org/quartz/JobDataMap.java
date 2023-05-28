@@ -63,7 +63,8 @@ import org.quartz.utils.StringKeyDirtyFlagMap;
 public class JobDataMap extends StringKeyDirtyFlagMap implements Serializable {
 
     private static final long serialVersionUID = -6939901990106713909L;
-    
+
+
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      * 
@@ -113,6 +114,7 @@ public class JobDataMap extends StringKeyDirtyFlagMap implements Serializable {
      */
     public void putAsString(String key, boolean value) {
         String strValue = Boolean.valueOf(value).toString();
+
 
         super.put(key, strValue);
     }
